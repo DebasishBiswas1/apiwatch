@@ -12,7 +12,7 @@ Why centralise dependencies here?
   once, test once.
 """
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,22 +27,22 @@ from app.models.user import User
 #   2. Extracts the token from the "Authorization: Bearer <token>" header
 #      and passes it as a string to the dependency that declares it.
 # tokenUrl is where clients get a token — used only by Swagger UI.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+bearer_scheme = HTTPBearer(auto_error=True)
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
     Resolve the currently authenticated user from the JWT in the request.
 
     FastAPI resolves the two Depends() parameters automatically:
-      - oauth2_scheme extracts the Bearer token from the header
+      - bearer_scheme extracts the Bearer token from the header
       - get_db opens a fresh async session for this request
 
     Flow:
-      1. Extract token from Authorization header (oauth2_scheme)
+      1. Extract token from Authorization header (bearer_scheme)
       2. Decode and verify JWT signature + expiry (decode_access_token)
       3. Read user_id from token payload
       4. Look up User in database
@@ -65,7 +65,7 @@ async def get_current_user(
 
     # Step 1: decode the JWT
     try:
-        payload = decode_access_token(token)
+        payload = decode_access_token(credentials.credentials)
         user_id: str | None = payload.get("user_id")
         if user_id is None:
             raise credentials_exception

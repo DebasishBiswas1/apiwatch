@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.openapi.models import HTTPBearer
+from fastapi.security import HTTPBearer as HTTPBearerScheme
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -78,7 +80,9 @@ def create_app() -> FastAPI:
     # ever need to introduce breaking changes — v2 routes can coexist
     # with v1 without disrupting existing clients.
     from app.api.v1.auth import router as auth_router
+    from app.api.v1.endpoints import router as endpoints_router 
     app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(endpoints_router, prefix="/api/v1")
 
     return app
 
