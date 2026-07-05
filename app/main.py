@@ -66,6 +66,19 @@ def create_app() -> FastAPI:
         async with SessionLocal() as session:
             await session.execute(text("SELECT 1"))
         return {"database": "reachable"}
+    
+    # ── API routers ───────────────────────────────────────────────────────────
+    # We import routers here (inside create_app) rather than at module
+    # level to avoid circular imports — routers import from models and
+    # security, which import from config, all of which need to be fully
+    # loaded before wiring happens.
+    #
+    # prefix="/api/v1" means all routes are versioned from the start.
+    # Versioning now costs nothing and saves enormous pain later if you
+    # ever need to introduce breaking changes — v2 routes can coexist
+    # with v1 without disrupting existing clients.
+    from app.api.v1.auth import router as auth_router
+    app.include_router(auth_router, prefix="/api/v1")
 
     return app
 
