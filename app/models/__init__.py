@@ -5,5 +5,6 @@
 from app.models.organization import Organization
 from app.models.user import User
 from app.models.endpoint import MonitoredEndpoint
+from app.models.metric import MetricRecord
 
-__all__ = ["Organization", "User", "MonitoredEndpoint"]
+__all__ = ["Organization", "User", "MonitoredEndpoint", "MetricRecord"]
